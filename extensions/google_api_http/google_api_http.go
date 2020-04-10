@@ -45,7 +45,20 @@ func getRule(r *annotations.HttpRule) (rule HTTPRule) {
 	return
 }
 
+// Field ...
+type Field struct {
+	Behavior string
+}
+
 func init() {
+	extensions.SetTransformer("google.api.field_behavior", func(payload interface{}) interface{} {
+		behavior, ok := payload.([]annotations.FieldBehavior)
+		if !ok || len(behavior) != 1 {
+			return nil
+		}
+		return Field{Behavior: behavior[0].String()}
+	})
+
 	extensions.SetTransformer("google.api.http", func(payload interface{}) interface{} {
 		var rules []HTTPRule
 		rule, ok := payload.(*annotations.HttpRule)

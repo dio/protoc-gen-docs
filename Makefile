@@ -63,7 +63,6 @@ docker_test: build tmp/googleapis docker
 examples: build tmp/googleapis examples/proto/*.proto examples/templates/*.tmpl
 	$(info Making examples...)
 	@rm -f examples/doc/*
-	@$(EXAMPLE_CMD) --doc_opt=docbook,example.docbook:Ignore* examples/proto/*.proto
 	@$(EXAMPLE_CMD) --doc_opt=html,example.html:Ignore* examples/proto/*.proto
 	@$(EXAMPLE_CMD) --doc_opt=json,example.json:Ignore* examples/proto/*.proto
 	@$(EXAMPLE_CMD) --doc_opt=markdown,example.md:Ignore* examples/proto/*.proto

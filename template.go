@@ -1,6 +1,7 @@
 package gendoc
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -26,18 +27,20 @@ func NewTemplate(descs []*protokit.FileDescriptor) *Template {
 
 	for _, f := range descs {
 		file := &File{
-			Name:          f.GetName(),
-			Description:   description(f.GetSyntaxComments().String()),
-			Package:       f.GetPackage(),
-			HasEnums:      len(f.Enums) > 0,
-			HasExtensions: len(f.Extensions) > 0,
-			HasMessages:   len(f.Messages) > 0,
-			HasServices:   len(f.Services) > 0,
-			Enums:         make(orderedEnums, 0, len(f.Enums)),
-			Extensions:    make(orderedExtensions, 0, len(f.Extensions)),
-			Messages:      make(orderedMessages, 0, len(f.Messages)),
-			Services:      make(orderedServices, 0, len(f.Services)),
-			Options:       mergeOptions(extractOptions(f.GetOptions()), extensions.Transform(f.OptionExtensions)),
+			Name:            f.GetName(),
+			Description:     description(f.GetSyntaxComments().String()),
+			PackageComments: f.GetPackageComments().String(),
+			Labels:          labels(f.GetPackageComments().GetDetached()),
+			Package:         f.GetPackage(),
+			HasEnums:        len(f.Enums) > 0,
+			HasExtensions:   len(f.Extensions) > 0,
+			HasMessages:     len(f.Messages) > 0,
+			HasServices:     len(f.Services) > 0,
+			Enums:           make(orderedEnums, 0, len(f.Enums)),
+			Extensions:      make(orderedExtensions, 0, len(f.Extensions)),
+			Messages:        make(orderedMessages, 0, len(f.Messages)),
+			Services:        make(orderedServices, 0, len(f.Services)),
+			Options:         mergeOptions(extractOptions(f.GetOptions()), extensions.Transform(f.OptionExtensions)),
 		}
 
 		for _, e := range f.Enums {
@@ -128,9 +131,11 @@ func extractOptions(opts commonOptions) map[string]interface{} {
 //
 // In the case of proto3 files, HasExtensions will always be false, and Extensions will be empty.
 type File struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Package     string `json:"package"`
+	Name            string            `json:"name"`
+	Description     string            `json:"description"`
+	Package         string            `json:"package"`
+	PackageComments string            `json:"packageComments"`
+	Labels          map[string]string `json:"labels"`
 
 	HasEnums      bool `json:"hasEnums"`
 	HasExtensions bool `json:"hasExtensions"`
@@ -563,8 +568,27 @@ func description(comment string) string {
 	if strings.HasPrefix(val, "@exclude") {
 		return ""
 	}
-
+	val = strings.ReplaceAll(val, "\n\n", "<br/><br/>")
 	return val
+}
+
+func labels(comment []string) map[string]string {
+	result := map[string]string{}
+	for _, detached := range comment {
+		scanner := bufio.NewScanner(strings.NewReader(detached))
+		for scanner.Scan() {
+			line := scanner.Text()
+			parts := strings.Split(line, " ")
+			if len(parts) == 0 {
+				continue
+			}
+
+			if strings.HasPrefix(parts[0], "$") && len(parts[0]) > 3 {
+				result[parts[0][1:len(parts[0])-1]] = strings.TrimSpace(line[len(parts[0]):len(line)])
+			}
+		}
+	}
+	return result
 }
 
 type orderedEnums []*Enum

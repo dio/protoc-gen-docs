@@ -235,6 +235,13 @@
           {{$message := .}}
           {{- range .FieldOptions}}
             {{$option := .}}
+            {{if eq . "google.api.field_behavior"}}
+            Field Behavior
+            {{range $message.FieldsWithOption .}}
+              {{.Name}}
+              {{(.Option $option).Behavior}}
+            {{end}}
+            {{end}}
             {{if eq . "validator.field" "validate.rules" }}
             <h4>Validated Fields</h4>
             <table>

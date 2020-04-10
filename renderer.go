@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	html_template "html/template"
+	"strings"
 	text_template "text/template"
 
 	"github.com/Masterminds/sprig"
@@ -122,7 +123,7 @@ func (mr *textRenderer) Apply(template *Template) ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return []byte(strings.TrimSpace(buf.String()) + "\n"), nil
 }
 
 type htmlRenderer struct {
@@ -140,7 +141,7 @@ func (mr *htmlRenderer) Apply(template *Template) ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return []byte(strings.TrimSpace(buf.String()) + "\n"), nil
 }
 
 type jsonRenderer struct{}
