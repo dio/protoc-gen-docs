@@ -240,6 +240,7 @@ type MessageField struct {
 	DefaultValue string `json:"defaultValue"`
 
 	Options map[string]interface{} `json:"options,omitempty"`
+	Hide    bool
 }
 
 // Option returns the named option.
@@ -457,7 +458,10 @@ func parseMessage(pm *protokit.Descriptor) *Message {
 	}
 
 	for _, f := range pm.Fields {
-		msg.Fields = append(msg.Fields, parseMessageField(f))
+		parsed := parseMessageField(f)
+		if !strings.Contains(parsed.Description, "$hide_from_docs") {
+			msg.Fields = append(msg.Fields, parseMessageField(f))
+		}
 	}
 
 	return msg
@@ -584,7 +588,7 @@ func labels(comment []string) map[string]string {
 			}
 
 			if strings.HasPrefix(parts[0], "$") && len(parts[0]) > 3 {
-				result[parts[0][1:len(parts[0])-1]] = strings.TrimSpace(line[len(parts[0]):len(line)])
+				result[parts[0][1:len(parts[0])-1]] = strings.TrimSpace(line[len(parts[0]):])
 			}
 		}
 	}
