@@ -4,7 +4,7 @@
       "name": "Booking.proto",
       "description": "",
       "package": "com.example",
-      "packageComments": "A Workspace carves a chunk of the Workspace resources owned by a\ntenant into an isolated configuration domain.\n\nThe following example claims `ns1` and `ns2` namespaces across all\nWorkspaces owned by the tenant `mycompany`.",
+      "packageComments": "ServiceDefinition describes the properties of services running on\nVMs or services outside the mesh. This service definition is\nintended to be authored by the cluster operator where access to\nthis service is desired.\n\nThe following example declares a VM service called `details` in the\n`bookinfo` namespace. The service has no sidecars and requires\nsimple TLS connections. The VM service is expected to receive\ntraffic from the ingress Gateway.\n\n```yaml\napiVersion: registry.tetrate.io/v1alpha1\nkind: ServiceDefinition\nmetadata:\n  name: details\n  namespace: bookinfo\nspec:\n  hostname: details.prod.internal.company.com\n  ports:\n  - number: 80\n    name: http\n    protocol: HTTP\n  - number: 443\n    name: https\n    protocol: HTTPS\n  sidecarsPresent: false\n  externalServiceTlsSettings:\n    tlsMode: SIMPLE\n    caCertificates: /path/to/ca/cert/to/verify/server/cert\n  endpointSource:\n    manual:\n      values:\n      - address: 1.1.1.1\n      - address: 2.2.2.2\n```\n\nIn the above example, services in the bookinfo namespace can access\nthe details service by using\nhttps://details.prod.internal.company.com . The sidecar would do a\nSNI Passthrough and load balance the traffic among the two\nendpoints. Alternatively, they could also access the service as\nplaintext http://details.prod.internal.company.com. The Sidecar in\na kubernetes pod would intercept the traffic, and initiate simple\nTLS connection to the destination appropriately.",
       "labels": {
         "description": "Workspace is a configuration domain for set of namespaces and Workspaces.",
         "location": "https://tetrate.io/docs/reference/config/v2/workspace.html",
@@ -198,7 +198,10 @@
             }
           ]
         }
-      ]
+      ],
+      "options": {
+        "deprecated": true
+      }
     }
   ],
   "scalarValueTypes": [

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -579,6 +580,7 @@ func description(comment string) string {
 func labels(comment []string) map[string]string {
 	result := map[string]string{}
 	for _, detached := range comment {
+		fmt.Fprintf(os.Stderr, "%s\n", detached)
 		scanner := bufio.NewScanner(strings.NewReader(detached))
 		for scanner.Scan() {
 			line := scanner.Text()
