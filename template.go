@@ -11,7 +11,18 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/pseudomuto/protoc-gen-doc/extensions"
 	"github.com/pseudomuto/protokit"
+	rbac_v2 "github.com/tetrateio/api/tsb/rbac/v2"
+	types_v2 "github.com/tetrateio/api/tsb/types/v2"
 )
+
+var permissions = map[string]rbac_v2.Permission{
+	"00": rbac_v2.Permission_INVALID,
+	"01": rbac_v2.Permission_READ,
+	"02": rbac_v2.Permission_WRITE,
+	"03": rbac_v2.Permission_CREATE,
+	"04": rbac_v2.Permission_DELETE,
+	"05": rbac_v2.Permission_SET_POLICY,
+}
 
 // Template is a type for encapsulating all the parsed files, messages, fields, enums, services, extensions, etc. into
 // an object that will be supplied to a go template.
@@ -506,6 +517,45 @@ func parseMessageField(pf *protokit.FieldDescriptor) *MessageField {
 }
 
 func parseService(ps *protokit.ServiceDescriptor) *Service {
+	if ps.OptionExtensions == nil {
+		ps.OptionExtensions = map[string]interface{}{}
+	}
+	parts := strings.Split(ps.GetOptions().String(), " ")
+	for _, part := range parts {
+		if strings.HasPrefix(part, "2001:") {
+			components := strings.Split(part[5:], "\\x")[1:]
+			if len(components) == 2 {
+				perm := components[1]
+				perm = perm[0 : len(perm)-1]
+				if components[0] == "01" {
+					ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
+						Permissions:                       []rbac_v2.Permission{permissions[perm]},
+						DeferPermissionCheckToApplication: false,
+					}
+				} else {
+					if perm == "01" {
+						ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
+							DeferPermissionCheckToApplication: true,
+						}
+					} else {
+						ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
+							DeferPermissionCheckToApplication: false,
+						}
+					}
+				}
+			} else if len(components) == 4 {
+				deferPermission := false
+				if components[3] == "01\"" {
+					deferPermission = true
+				}
+				ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
+					Permissions:                       []rbac_v2.Permission{permissions[components[1]]},
+					DeferPermissionCheckToApplication: deferPermission,
+				}
+			}
+		}
+	}
+
 	service := &Service{
 		Name:        ps.GetName(),
 		LongName:    ps.GetLongName(),
@@ -522,6 +572,48 @@ func parseService(ps *protokit.ServiceDescriptor) *Service {
 }
 
 func parseServiceMethod(pm *protokit.MethodDescriptor) *ServiceMethod {
+	// Super hacky indeed!
+	parts := strings.Split(pm.GetOptions().String(), " ")
+	for _, part := range parts {
+		if strings.HasPrefix(part, "2001:") {
+			components := strings.Split(part[5:], "\\x")[1:]
+			if len(components) == 2 {
+				perm := components[1]
+				perm = perm[0 : len(perm)-1]
+				if components[0] == "01" {
+					pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
+						Permissions:                       []rbac_v2.Permission{permissions[perm]},
+						DeferPermissionCheckToApplication: false,
+					}
+				} else {
+					if components[1] == "01" {
+						pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
+							DeferPermissionCheckToApplication: true,
+						}
+					} else {
+						pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
+							DeferPermissionCheckToApplication: false,
+						}
+					}
+				}
+			} else if len(components) == 4 {
+				deferPermission := false
+				if components[3] == "01\"" {
+					deferPermission = true
+				}
+				pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
+					Permissions:                       []rbac_v2.Permission{permissions[components[1]]},
+					DeferPermissionCheckToApplication: deferPermission,
+				}
+			}
+		} else if strings.HasPrefix(part, "2002:") {
+			components := strings.Split(part, "\\n'")
+			pm.OptionExtensions["tetrateio.api.tsb.types.v2.spec"] = types_v2.IstioObjectSpec{
+				Type: (components[1][0:(len(components[1]) - 1)]),
+			}
+		}
+	}
+
 	return &ServiceMethod{
 		Name:              pm.GetName(),
 		Description:       description(pm.GetComments().String()),

@@ -7,7 +7,7 @@ DOCS_DIR=$(EXAMPLE_DIR)/doc
 PROTOS_DIR=$(EXAMPLE_DIR)/proto
 
 EXAMPLE_CMD=protoc --plugin=protoc-gen-doc \
-	-Ithirdparty -Itmp/googleapis -Iexamples/proto \
+	-Ithirdparty -Itmp/googleapis -Itmp/tetrate -Iexamples/proto \
 	--doc_out=examples/doc
 
 DOCKER_CMD=docker run --rm \

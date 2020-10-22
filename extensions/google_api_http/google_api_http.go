@@ -3,7 +3,11 @@ package extensions
 import (
 	"net/http"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/pseudomuto/protoc-gen-doc/extensions"
+	rbac_v2 "github.com/tetrateio/api/tsb/rbac/v2"
+	types_v2 "github.com/tetrateio/api/tsb/types/v2"
 	"google.golang.org/genproto/googleapis/api/annotations"
 )
 
@@ -50,7 +54,27 @@ type Field struct {
 	Behavior string
 }
 
+// RbacRequires ...
+type RbacRequires struct {
+	Permissions                      string
+	DeferPermissioCheckToApplication bool
+}
+
+// IstioObjectSpec ...
+type IstioObjectSpec struct {
+	AtType string
+}
+
 func init() {
+	proto.RegisterExtension(&proto.ExtensionDesc{
+		ExtendedType:  (*descriptor.FieldOptions)(nil),
+		ExtensionType: rbac_v2.E_Requires.ExtensionType,
+		Field:         rbac_v2.E_Requires.Field,
+		Name:          rbac_v2.E_Requires.Name,
+		Tag:           rbac_v2.E_Requires.Tag,
+		Filename:      rbac_v2.E_Requires.Filename,
+	})
+
 	extensions.SetTransformer("google.api.field_behavior", func(payload interface{}) interface{} {
 		behavior, ok := payload.([]annotations.FieldBehavior)
 		if !ok || len(behavior) != 1 {
@@ -74,5 +98,38 @@ func init() {
 		}
 
 		return HTTPExtension{Rules: rules}
+	})
+
+	extensions.SetTransformer("tetrateio.api.tsb.rbac.v2.requires", func(payload interface{}) interface{} {
+		requires, ok := payload.(rbac_v2.RequiredPermission)
+		if !ok {
+			return nil
+		}
+		return RbacRequires{
+			Permissions:                      requires.Permissions[0].String(),
+			DeferPermissioCheckToApplication: requires.DeferPermissionCheckToApplication,
+		}
+	})
+
+	extensions.SetTransformer("tetrateio.api.tsb.rbac.v2.default_requires", func(payload interface{}) interface{} {
+		requires, ok := payload.(rbac_v2.RequiredPermission)
+		if !ok {
+			return nil
+		}
+
+		return RbacRequires{
+			Permissions:                      requires.Permissions[0].String(),
+			DeferPermissioCheckToApplication: requires.DeferPermissionCheckToApplication,
+		}
+	})
+
+	extensions.SetTransformer("tetrateio.api.tsb.types.v2.spec", func(payload interface{}) interface{} {
+		spec, ok := payload.(types_v2.IstioObjectSpec)
+		if !ok {
+			return nil
+		}
+		return IstioObjectSpec{
+			AtType: "type.googleapis.com/" + spec.Type,
+		}
 	})
 }

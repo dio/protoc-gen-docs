@@ -57,6 +57,8 @@ package com.example;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
+import "tsb/rbac/v2/options.proto";
+import "tsb/types/v2/options.proto";
 import "github.com/mwitkow/go-proto-validators/validator.proto";
 
 // Represents the booking status ID.
@@ -99,8 +101,20 @@ message EmptyBookingMessage {
 
 // Service for handling vehicle bookings.
 service BookingService {
+  option (tetrateio.api.tsb.rbac.v2.default_requires) = {
+    permissions: SET_POLICY
+    defer_permission_check_to_application: false
+  };
+
   // Used to book a vehicle. Pass in a Booking and a BookingStatus will be returned.
   rpc BookVehicle (Booking) returns (BookingStatus) {
+    option (tetrateio.api.tsb.rbac.v2.requires) = {
+      permissions: READ
+      defer_permission_check_to_application: true
+    };
+    option (tetrateio.api.tsb.types.v2.spec) = {
+      type: "istio.networking.v1beta1.VirtualService"
+    };
     option (google.api.http) = {
       post: "/api/bookings/vehicle/{vehicle_id}"
       body: "*"
