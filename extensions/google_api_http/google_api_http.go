@@ -51,18 +51,19 @@ func getRule(r *annotations.HttpRule) (rule HTTPRule) {
 
 // Field ...
 type Field struct {
-	Behavior string
+	Behavior string `json:"behavior"`
 }
 
 // RbacRequires ...
 type RbacRequires struct {
-	Permissions                      string
-	DeferPermissioCheckToApplication bool
+	Permissions                      string   `json:"permissions"`
+	RawPermissions                   []string `json:"rawPermissions"`
+	DeferPermissioCheckToApplication bool     `json:"deferPermissioCheckToApplication"`
 }
 
 // IstioObjectSpec ...
 type IstioObjectSpec struct {
-	AtType string
+	AtType string `json:"@type"`
 }
 
 func init() {
@@ -105,10 +106,18 @@ func init() {
 		if !ok {
 			return nil
 		}
-		return RbacRequires{
-			Permissions:                      requires.Permissions[0].String(),
+
+		rbacRequires := RbacRequires{
 			DeferPermissioCheckToApplication: requires.DeferPermissionCheckToApplication,
 		}
+
+		if len(requires.Permissions) > 0 {
+			rbacRequires.Permissions = requires.Permissions[0].String()
+		}
+
+		rbacRequires.RawPermissions = requires.RawPermissions
+
+		return rbacRequires
 	})
 
 	extensions.SetTransformer("tetrateio.api.tsb.rbac.v2.default_requires", func(payload interface{}) interface{} {
@@ -117,10 +126,17 @@ func init() {
 			return nil
 		}
 
-		return RbacRequires{
-			Permissions:                      requires.Permissions[0].String(),
+		rbacRequires := RbacRequires{
 			DeferPermissioCheckToApplication: requires.DeferPermissionCheckToApplication,
 		}
+
+		if len(requires.Permissions) > 0 {
+			rbacRequires.Permissions = requires.Permissions[0].String()
+		}
+
+		rbacRequires.RawPermissions = requires.RawPermissions
+
+		return rbacRequires
 	})
 
 	extensions.SetTransformer("tetrateio.api.tsb.types.v2.spec", func(payload interface{}) interface{} {

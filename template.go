@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -23,6 +24,8 @@ var permissions = map[string]rbac_v2.Permission{
 	"04": rbac_v2.Permission_DELETE,
 	"05": rbac_v2.Permission_SET_POLICY,
 }
+
+var isAlpha = regexp.MustCompile(`^[A-Za-z]+$`).MatchString
 
 // Template is a type for encapsulating all the parsed files, messages, fields, enums, services, extensions, etc. into
 // an object that will be supplied to a go template.
@@ -523,36 +526,40 @@ func parseService(ps *protokit.ServiceDescriptor) *Service {
 	parts := strings.Split(ps.GetOptions().String(), " ")
 	for _, part := range parts {
 		if strings.HasPrefix(part, "2001:") {
-			components := strings.Split(part[5:], "\\x")[1:]
-			if len(components) == 2 {
-				perm := components[1]
-				perm = perm[0 : len(perm)-1]
-				if components[0] == "01" {
-					ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
-						Permissions:                       []rbac_v2.Permission{permissions[perm]},
-						DeferPermissionCheckToApplication: false,
+			payload := part[8 : len(part)-1]
+			components := deleteEmpty(strings.Split(payload, "\\"))
+
+			requiredPermissions := rbac_v2.RequiredPermission{
+				RawPermissions: []string{},
+			}
+			paramSwitch := false
+			paramKey := ""
+			for index, component := range components {
+				if index%2 == 1 && paramSwitch {
+					paramSwitch = false
+
+					if paramKey == "x01" {
+						requiredPermissions.Permissions = []rbac_v2.Permission{permissions[component[1:]]}
+					}
+
+					if paramKey == "x18" && component == "x01" {
+						requiredPermissions.DeferPermissionCheckToApplication = true
+					}
+
+					if paramKey == "x12" || paramKey == "12" {
+						first := string(component[0])
+						value := component[1:]
+						if isAlpha(first) && first == "x" {
+							value = component[3:]
+						}
+						requiredPermissions.RawPermissions = append(requiredPermissions.RawPermissions, value)
 					}
 				} else {
-					if perm == "01" {
-						ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
-							DeferPermissionCheckToApplication: true,
-						}
-					} else {
-						ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
-							DeferPermissionCheckToApplication: false,
-						}
-					}
-				}
-			} else if len(components) == 4 {
-				deferPermission := false
-				if components[3] == "01\"" {
-					deferPermission = true
-				}
-				ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = rbac_v2.RequiredPermission{
-					Permissions:                       []rbac_v2.Permission{permissions[components[1]]},
-					DeferPermissionCheckToApplication: deferPermission,
+					paramSwitch = true
+					paramKey = component
 				}
 			}
+			ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = requiredPermissions
 		}
 	}
 
@@ -572,40 +579,49 @@ func parseService(ps *protokit.ServiceDescriptor) *Service {
 }
 
 func parseServiceMethod(pm *protokit.MethodDescriptor) *ServiceMethod {
+	if pm.OptionExtensions == nil {
+		pm.OptionExtensions = map[string]interface{}{}
+	}
+
 	// Super hacky indeed!
 	parts := strings.Split(pm.GetOptions().String(), " ")
 	for _, part := range parts {
 		if strings.HasPrefix(part, "2001:") {
-			components := strings.Split(part[5:], "\\x")[1:]
-			if len(components) == 2 {
-				perm := components[1]
-				perm = perm[0 : len(perm)-1]
-				if components[0] == "01" {
-					pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
-						Permissions:                       []rbac_v2.Permission{permissions[perm]},
-						DeferPermissionCheckToApplication: false,
+			payload := part[8 : len(part)-1]
+			fmt.Fprintf(os.Stderr, "%v\n", payload)
+			components := deleteEmpty(strings.Split(payload, "\\"))
+
+			requiredPermissions := rbac_v2.RequiredPermission{
+				RawPermissions: []string{},
+			}
+			paramSwitch := false
+			paramKey := ""
+			for index, component := range components {
+				if index%2 == 1 && paramSwitch {
+					paramSwitch = false
+
+					if paramKey == "x01" || paramKey == "01" {
+						requiredPermissions.Permissions = []rbac_v2.Permission{permissions[component[1:]]}
+					}
+
+					if (paramKey == "x18" || paramKey == "18") && component == "x01" {
+						requiredPermissions.DeferPermissionCheckToApplication = true
+					}
+
+					if paramKey == "x12" || paramKey == "12" {
+						first := string(component[0])
+						value := component[1:]
+						if isAlpha(first) && first == "x" {
+							value = component[3:]
+						}
+						requiredPermissions.RawPermissions = append(requiredPermissions.RawPermissions, value)
 					}
 				} else {
-					if components[1] == "01" {
-						pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
-							DeferPermissionCheckToApplication: true,
-						}
-					} else {
-						pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
-							DeferPermissionCheckToApplication: false,
-						}
-					}
-				}
-			} else if len(components) == 4 {
-				deferPermission := false
-				if components[3] == "01\"" {
-					deferPermission = true
-				}
-				pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = rbac_v2.RequiredPermission{
-					Permissions:                       []rbac_v2.Permission{permissions[components[1]]},
-					DeferPermissionCheckToApplication: deferPermission,
+					paramSwitch = true
+					paramKey = component
 				}
 			}
+			pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = requiredPermissions
 		} else if strings.HasPrefix(part, "2002:") {
 			components := strings.Split(part, "\\n'")
 			pm.OptionExtensions["tetrateio.api.tsb.types.v2.spec"] = types_v2.IstioObjectSpec{
@@ -712,3 +728,13 @@ type orderedServices []*Service
 func (os orderedServices) Len() int           { return len(os) }
 func (os orderedServices) Swap(i, j int)      { os[i], os[j] = os[j], os[i] }
 func (os orderedServices) Less(i, j int) bool { return os[i].LongName < os[j].LongName }
+
+func deleteEmpty(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
+}

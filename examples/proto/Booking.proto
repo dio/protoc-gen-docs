@@ -101,15 +101,9 @@ message EmptyBookingMessage {
 
 // Service for handling vehicle bookings.
 service BookingService {
-  option (tetrateio.api.tsb.rbac.v2.default_requires) = {
-    permissions: SET_POLICY
-    defer_permission_check_to_application: false
-  };
-
   // Used to book a vehicle. Pass in a Booking and a BookingStatus will be returned.
   rpc BookVehicle (Booking) returns (BookingStatus) {
     option (tetrateio.api.tsb.rbac.v2.requires) = {
-      permissions: READ
       defer_permission_check_to_application: true
     };
     option (tetrateio.api.tsb.types.v2.spec) = {
