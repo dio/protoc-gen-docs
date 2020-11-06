@@ -60,6 +60,7 @@ import "google/api/field_behavior.proto";
 import "tsb/rbac/v2/options.proto";
 import "tsb/types/v2/options.proto";
 import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
 // Represents the booking status ID.
 message BookingStatusID {
@@ -74,6 +75,8 @@ message BookingStatus {
   int32 id           = 1 [(google.api.field_behavior) = REQUIRED];
   // Booking status description. E.g. "Active".
   string description = 2 [(validator.field) = {string_not_empty: true, length_lt: 255}];
+  // Name.
+  string hahaha = 3 [(google.api.field_behavior) = REQUIRED, (validate.rules).string.min_len = 1];
 }
 
 

@@ -292,6 +292,13 @@
                   <td><p>Booking status description. E.g. &#34;Active&#34;. </p></td>
                 </tr>
               
+                <tr>
+                  <td>hahaha</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Name. </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -301,6 +308,9 @@
             Field Behavior
             
               id
+              REQUIRED
+            
+              hahaha
               REQUIRED
             
             
@@ -317,6 +327,11 @@
               
                 <tr>
                   <td>id</td>
+                  <td><p>{Behavior:REQUIRED}</p></td>
+                </tr>
+              
+                <tr>
+                  <td>hahaha</td>
                   <td><p>{Behavior:REQUIRED}</p></td>
                 </tr>
               
@@ -338,13 +353,11 @@
               <tbody>
               
                 <tr>
-                  <td>description</td>
+                  <td>hahaha</td>
                   <td>
                     <ul>
                     
-                      <li>string_not_empty: true</li>
-                    
-                      <li>length_lt: 255</li>
+                      <li>string.min_len: 1</li>
                     
                     </ul>
                   </td>

@@ -35,7 +35,7 @@
               "fullType": "int32",
               "ismap": false,
               "defaultValue": "",
-              "Hide": false
+              "hide": false
             },
             {
               "name": "customer_id",
@@ -46,7 +46,7 @@
               "fullType": "int32",
               "ismap": false,
               "defaultValue": "",
-              "Hide": false
+              "hide": false
             },
             {
               "name": "status",
@@ -57,7 +57,7 @@
               "fullType": "com.example.BookingStatus",
               "ismap": false,
               "defaultValue": "",
-              "Hide": false
+              "hide": false
             },
             {
               "name": "confirmation_sent",
@@ -68,7 +68,7 @@
               "fullType": "bool",
               "ismap": false,
               "defaultValue": "",
-              "Hide": false
+              "hide": false
             },
             {
               "name": "payment_received",
@@ -79,7 +79,7 @@
               "fullType": "bool",
               "ismap": false,
               "defaultValue": "",
-              "Hide": false
+              "hide": false
             }
           ]
         },
@@ -106,7 +106,7 @@
                   "behavior": "REQUIRED"
                 }
               },
-              "Hide": false
+              "hide": false
             },
             {
               "name": "description",
@@ -117,19 +117,29 @@
               "fullType": "string",
               "ismap": false,
               "defaultValue": "",
+              "hide": false
+            },
+            {
+              "name": "hahaha",
+              "description": "Name.",
+              "label": "",
+              "type": "string",
+              "longType": "string",
+              "fullType": "string",
+              "ismap": false,
+              "defaultValue": "",
               "options": {
-                "validator.field": [
+                "google.api.field_behavior": {
+                  "behavior": "REQUIRED"
+                },
+                "validate.rules": [
                   {
-                    "name": "string_not_empty",
-                    "value": true
-                  },
-                  {
-                    "name": "length_lt",
-                    "value": 255
+                    "name": "string.min_len",
+                    "value": 1
                   }
                 ]
               },
-              "Hide": false
+              "hide": false
             }
           ]
         },

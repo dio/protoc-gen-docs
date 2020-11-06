@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -255,7 +254,7 @@ type MessageField struct {
 	DefaultValue string `json:"defaultValue"`
 
 	Options map[string]interface{} `json:"options,omitempty"`
-	Hide    bool
+	Hide    bool                   `json:"hide"`
 }
 
 // Option returns the named option.
@@ -588,7 +587,6 @@ func parseServiceMethod(pm *protokit.MethodDescriptor) *ServiceMethod {
 	for _, part := range parts {
 		if strings.HasPrefix(part, "2001:") {
 			payload := part[8 : len(part)-1]
-			fmt.Fprintf(os.Stderr, "%v\n", payload)
 			components := deleteEmpty(strings.Split(payload, "\\"))
 
 			requiredPermissions := rbac_v2.RequiredPermission{
@@ -688,7 +686,6 @@ func description(comment string) string {
 func labels(comment []string) map[string]string {
 	result := map[string]string{}
 	for _, detached := range comment {
-		fmt.Fprintf(os.Stderr, "%s\n", detached)
 		scanner := bufio.NewScanner(strings.NewReader(detached))
 		for scanner.Scan() {
 			line := scanner.Text()

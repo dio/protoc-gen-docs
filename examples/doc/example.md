@@ -51,6 +51,7 @@ Represents the status of a vehicle booking.
 | ----- | ---- | ----- | ----------- |
 | id | [int32](#int32) |  | Unique booking status ID. |
 | description | [string](#string) |  | Booking status description. E.g. &#34;Active&#34;. |
+| hahaha | [string](#string) |  | Name. |
 
 
 

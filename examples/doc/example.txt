@@ -39,6 +39,8 @@ Represents the status of a vehicle booking.
 
 |description | <<string,string>> | |Booking status description. E.g. "Active".
 
+|hahaha | <<string,string>> | |Name.
+
 |===========================================
 
 
