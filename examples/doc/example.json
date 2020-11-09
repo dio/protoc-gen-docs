@@ -35,7 +35,7 @@
               "fullType": "int32",
               "ismap": false,
               "defaultValue": "",
-              "hide": false
+              "hideFromYaml": false
             },
             {
               "name": "customer_id",
@@ -46,7 +46,7 @@
               "fullType": "int32",
               "ismap": false,
               "defaultValue": "",
-              "hide": false
+              "hideFromYaml": false
             },
             {
               "name": "status",
@@ -57,7 +57,7 @@
               "fullType": "com.example.BookingStatus",
               "ismap": false,
               "defaultValue": "",
-              "hide": false
+              "hideFromYaml": false
             },
             {
               "name": "confirmation_sent",
@@ -68,7 +68,7 @@
               "fullType": "bool",
               "ismap": false,
               "defaultValue": "",
-              "hide": false
+              "hideFromYaml": false
             },
             {
               "name": "payment_received",
@@ -79,7 +79,7 @@
               "fullType": "bool",
               "ismap": false,
               "defaultValue": "",
-              "hide": false
+              "hideFromYaml": false
             }
           ]
         },
@@ -106,7 +106,7 @@
                   "behavior": "REQUIRED"
                 }
               },
-              "hide": false
+              "hideFromYaml": false
             },
             {
               "name": "description",
@@ -117,7 +117,7 @@
               "fullType": "string",
               "ismap": false,
               "defaultValue": "",
-              "hide": false
+              "hideFromYaml": false
             },
             {
               "name": "hahaha",
@@ -139,7 +139,7 @@
                   }
                 ]
               },
-              "hide": false
+              "hideFromYaml": true
             }
           ]
         },

@@ -68,7 +68,11 @@ func NewTemplate(descs []*protokit.FileDescriptor) *Template {
 		// Recursively add nested types from messages
 		var addFromMessage func(*protokit.Descriptor)
 		addFromMessage = func(m *protokit.Descriptor) {
-			file.Messages = append(file.Messages, parseMessage(m))
+			parsed := parseMessage(m)
+			if !strings.Contains(parsed.Description, "$hide_from_docs") {
+				file.Messages = append(file.Messages, parseMessage(m))
+			}
+
 			for _, e := range m.Enums {
 				file.Enums = append(file.Enums, parseEnum(e))
 			}
@@ -253,8 +257,8 @@ type MessageField struct {
 	IsMap        bool   `json:"ismap"`
 	DefaultValue string `json:"defaultValue"`
 
-	Options map[string]interface{} `json:"options,omitempty"`
-	Hide    bool                   `json:"hide"`
+	Options      map[string]interface{} `json:"options,omitempty"`
+	HideFromYaml bool                   `json:"hideFromYaml"`
 }
 
 // Option returns the named option.
@@ -474,7 +478,12 @@ func parseMessage(pm *protokit.Descriptor) *Message {
 	for _, f := range pm.Fields {
 		parsed := parseMessageField(f)
 		if !strings.Contains(parsed.Description, "$hide_from_docs") {
-			msg.Fields = append(msg.Fields, parseMessageField(f))
+			parsed.HideFromYaml = strings.Contains(parsed.Description, "$hide_from_yaml")
+			parts := strings.Split(parsed.Description, "$hide_from_yaml")
+			if len(parts) > 1 {
+				parsed.Description = strings.TrimSpace(parts[0])
+			}
+			msg.Fields = append(msg.Fields, parsed)
 		}
 	}
 
