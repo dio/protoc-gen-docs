@@ -106,6 +106,10 @@ message EmptyBookingMessage {
 message HideFromDocsMessage {
 }
 
+// Haha $hide_from_yaml
+message HideFromYamlMessage {
+}
+
 // Service for handling vehicle bookings.
 service BookingService {
   // Used to book a vehicle. Pass in a Booking and a BookingStatus will be returned.

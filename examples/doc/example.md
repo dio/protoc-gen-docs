@@ -8,6 +8,7 @@
     - [BookingStatus](#com.example.BookingStatus)
     - [BookingStatusID](#com.example.BookingStatusID)
     - [EmptyBookingMessage](#com.example.EmptyBookingMessage)
+    - [HideFromYamlMessage](#com.example.HideFromYamlMessage)
   
     - [BookingService](#com.example.BookingService)
   
@@ -76,6 +77,16 @@ Represents the booking status ID.
 
 ### EmptyBookingMessage
 An empty message for testing
+
+
+
+
+
+
+<a name="com.example.HideFromYamlMessage"></a>
+
+### HideFromYamlMessage
+Haha
 
 
 

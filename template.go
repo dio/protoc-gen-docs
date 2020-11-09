@@ -70,7 +70,12 @@ func NewTemplate(descs []*protokit.FileDescriptor) *Template {
 		addFromMessage = func(m *protokit.Descriptor) {
 			parsed := parseMessage(m)
 			if !strings.Contains(parsed.Description, "$hide_from_docs") {
-				file.Messages = append(file.Messages, parseMessage(m))
+				parsed.HideFromYaml = strings.Contains(parsed.Description, "$hide_from_yaml")
+				parts := strings.Split(parsed.Description, "$hide_from_yaml")
+				if len(parts) > 1 {
+					parsed.Description = strings.TrimSpace(parts[0])
+				}
+				file.Messages = append(file.Messages, parsed)
 			}
 
 			for _, e := range m.Enums {
@@ -204,6 +209,8 @@ type Message struct {
 	Fields     []*MessageField     `json:"fields"`
 
 	Options map[string]interface{} `json:"options,omitempty"`
+
+	HideFromYaml bool                   `json:"hideFromYaml"`
 }
 
 // Option returns the named option.

@@ -81,7 +81,8 @@
               "defaultValue": "",
               "hideFromYaml": false
             }
-          ]
+          ],
+          "hideFromYaml": false
         },
         {
           "name": "BookingStatus",
@@ -141,7 +142,8 @@
               },
               "hideFromYaml": true
             }
-          ]
+          ],
+          "hideFromYaml": false
         },
         {
           "name": "BookingStatusID",
@@ -151,7 +153,8 @@
           "hasExtensions": false,
           "hasFields": true,
           "extensions": [],
-          "fields": []
+          "fields": [],
+          "hideFromYaml": false
         },
         {
           "name": "EmptyBookingMessage",
@@ -161,7 +164,19 @@
           "hasExtensions": false,
           "hasFields": false,
           "extensions": [],
-          "fields": []
+          "fields": [],
+          "hideFromYaml": false
+        },
+        {
+          "name": "HideFromYamlMessage",
+          "longName": "HideFromYamlMessage",
+          "fullName": "com.example.HideFromYamlMessage",
+          "description": "Haha",
+          "hasExtensions": false,
+          "hasFields": false,
+          "extensions": [],
+          "fields": [],
+          "hideFromYaml": true
         }
       ],
       "services": [
