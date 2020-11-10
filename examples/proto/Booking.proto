@@ -110,12 +110,11 @@ message HideFromDocsMessage {
 message HideFromYamlMessage {
 }
 
-// Service for handling vehicle bookings.
 service BookingService {
   // Used to book a vehicle. Pass in a Booking and a BookingStatus will be returned.
   rpc BookVehicle (Booking) returns (BookingStatus) {
     option (tetrateio.api.tsb.rbac.v2.requires) = {
-      defer_permission_check_to_application: true
+      permissions: [CREATE, WRITE]
     };
     option (tetrateio.api.tsb.types.v2.spec) = {
       type: "istio.networking.v1beta1.VirtualService"
@@ -127,5 +126,14 @@ service BookingService {
   }
 
   // Used to subscribe to updates of the BookingStatus.
+  rpc BookingUpdates (BookingStatusID) returns (stream BookingStatus);
+
+  // HAHAHA. $hide_from_docs
+  rpc BookingUpdates2 (BookingStatusID) returns (stream BookingStatus);
+}
+
+// OK hahah.
+// HAHAHA. $hide_from_docs
+service BookingServiceHidden {
   rpc BookingUpdates (BookingStatusID) returns (stream BookingStatus);
 }

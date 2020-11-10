@@ -13,7 +13,8 @@ require (
 	github.com/mwitkow/go-proto-validators v0.0.0-20180403085117-0950a7990007
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/stretchr/testify v1.6.1
-	github.com/tetrateio/api v0.0.0-20201022065335-3a4686f2adfc
+	github.com/tetrateio/api v0.0.0-20201110015043-19ecd5d36f61
 	google.golang.org/api v0.34.0
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
+	google.golang.org/protobuf v1.25.0
 )

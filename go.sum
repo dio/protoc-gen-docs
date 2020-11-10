@@ -201,6 +201,8 @@ github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tetrateio/api v0.0.0-20201022065335-3a4686f2adfc h1:r0Ti08z5IS6MiQnzx+MpILYSszXkVhKwgYkb0t4d70A=
 github.com/tetrateio/api v0.0.0-20201022065335-3a4686f2adfc/go.mod h1:3lZB49NcabliXUg5dxyeFTHmL5Nwma+ASxX83DHh4P8=
+github.com/tetrateio/api v0.0.0-20201110015043-19ecd5d36f61 h1:P9EG5eboz7J85l/Z5BjhR4ojCVo54GZ9T+aRThtPKAk=
+github.com/tetrateio/api v0.0.0-20201110015043-19ecd5d36f61/go.mod h1:/hjUgDk3k1krFkYjpkx/6nCEC620LV9xQWyoVUBUo7s=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

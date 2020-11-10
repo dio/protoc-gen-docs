@@ -3,11 +3,7 @@ package extensions
 import (
 	"net/http"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/pseudomuto/protoc-gen-doc/extensions"
-	rbac_v2 "github.com/tetrateio/api/tsb/rbac/v2"
-	types_v2 "github.com/tetrateio/api/tsb/types/v2"
 	"google.golang.org/genproto/googleapis/api/annotations"
 )
 
@@ -56,26 +52,17 @@ type Field struct {
 
 // RbacRequires ...
 type RbacRequires struct {
-	Permissions                      string   `json:"permissions"`
+	Permissions                      []string `json:"permissions"`
 	RawPermissions                   []string `json:"rawPermissions"`
 	DeferPermissioCheckToApplication bool     `json:"deferPermissioCheckToApplication"`
 }
 
-// IstioObjectSpec ...
-type IstioObjectSpec struct {
+// IstioObjectSpecOptions ...
+type IstioObjectSpecOptions struct {
 	AtType string `json:"@type"`
 }
 
 func init() {
-	proto.RegisterExtension(&proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.FieldOptions)(nil),
-		ExtensionType: rbac_v2.E_Requires.ExtensionType,
-		Field:         rbac_v2.E_Requires.Field,
-		Name:          rbac_v2.E_Requires.Name,
-		Tag:           rbac_v2.E_Requires.Tag,
-		Filename:      rbac_v2.E_Requires.Filename,
-	})
-
 	extensions.SetTransformer("google.api.field_behavior", func(payload interface{}) interface{} {
 		behavior, ok := payload.([]annotations.FieldBehavior)
 		if !ok || len(behavior) != 1 {
@@ -102,50 +89,42 @@ func init() {
 	})
 
 	extensions.SetTransformer("tetrateio.api.tsb.rbac.v2.requires", func(payload interface{}) interface{} {
-		requires, ok := payload.(rbac_v2.RequiredPermission)
-		if !ok {
-			return nil
-		}
-
-		rbacRequires := RbacRequires{
-			DeferPermissioCheckToApplication: requires.DeferPermissionCheckToApplication,
-		}
-
-		if len(requires.Permissions) > 0 {
-			rbacRequires.Permissions = requires.Permissions[0].String()
-		}
-
-		rbacRequires.RawPermissions = requires.RawPermissions
-
-		return rbacRequires
+		return parseRequires(payload)
 	})
 
 	extensions.SetTransformer("tetrateio.api.tsb.rbac.v2.default_requires", func(payload interface{}) interface{} {
-		requires, ok := payload.(rbac_v2.RequiredPermission)
-		if !ok {
-			return nil
-		}
-
-		rbacRequires := RbacRequires{
-			DeferPermissioCheckToApplication: requires.DeferPermissionCheckToApplication,
-		}
-
-		if len(requires.Permissions) > 0 {
-			rbacRequires.Permissions = requires.Permissions[0].String()
-		}
-
-		rbacRequires.RawPermissions = requires.RawPermissions
-
-		return rbacRequires
+		return parseRequires(payload)
 	})
 
 	extensions.SetTransformer("tetrateio.api.tsb.types.v2.spec", func(payload interface{}) interface{} {
-		spec, ok := payload.(types_v2.IstioObjectSpec)
+		spec, ok := payload.(*IstioObjectSpec)
 		if !ok {
 			return nil
 		}
-		return IstioObjectSpec{
+		return IstioObjectSpecOptions{
 			AtType: "type.googleapis.com/" + spec.Type,
 		}
 	})
+}
+
+func parseRequires(payload interface{}) interface{} {
+	requires, ok := payload.(*RequiredPermission)
+	if !ok {
+		return nil
+	}
+
+	rbacRequires := RbacRequires{
+		DeferPermissioCheckToApplication: requires.DeferPermissionCheckToApplication,
+	}
+
+	if len(requires.Permissions) > 0 {
+		for _, permission := range requires.Permissions {
+			rbacRequires.Permissions = append(rbacRequires.Permissions, permission.String())
+		}
+	}
+	rbacRequires.RawPermissions = []string{}
+	if requires.RawPermissions != nil {
+		rbacRequires.RawPermissions = append(rbacRequires.RawPermissions, requires.RawPermissions...)
+	}
+	return rbacRequires
 }

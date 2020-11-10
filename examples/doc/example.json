@@ -184,7 +184,7 @@
           "name": "BookingService",
           "longName": "BookingService",
           "fullName": "com.example.BookingService",
-          "description": "Service for handling vehicle bookings.",
+          "description": "",
           "methods": [
             {
               "name": "BookVehicle",
@@ -208,9 +208,12 @@
                   ]
                 },
                 "tetrateio.api.tsb.rbac.v2.requires": {
-                  "permissions": "",
+                  "permissions": [
+                    "CREATE",
+                    "WRITE"
+                  ],
                   "rawPermissions": [],
-                  "deferPermissioCheckToApplication": true
+                  "deferPermissioCheckToApplication": false
                 },
                 "tetrateio.api.tsb.types.v2.spec": {
                   "@type": "type.googleapis.com/istio.networking.v1beta1.VirtualService"

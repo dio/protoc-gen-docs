@@ -11,18 +11,16 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/pseudomuto/protoc-gen-doc/extensions"
 	"github.com/pseudomuto/protokit"
-	rbac_v2 "github.com/tetrateio/api/tsb/rbac/v2"
-	types_v2 "github.com/tetrateio/api/tsb/types/v2"
 )
 
-var permissions = map[string]rbac_v2.Permission{
-	"00": rbac_v2.Permission_INVALID,
-	"01": rbac_v2.Permission_READ,
-	"02": rbac_v2.Permission_WRITE,
-	"03": rbac_v2.Permission_CREATE,
-	"04": rbac_v2.Permission_DELETE,
-	"05": rbac_v2.Permission_SET_POLICY,
-}
+// var permissions = map[string]rbac_v2.Permission{
+// 	"00": rbac_v2.Permission_INVALID,
+// 	"01": rbac_v2.Permission_READ,
+// 	"02": rbac_v2.Permission_WRITE,
+// 	"03": rbac_v2.Permission_CREATE,
+// 	"04": rbac_v2.Permission_DELETE,
+// 	"05": rbac_v2.Permission_SET_POLICY,
+// }
 
 var isAlpha = regexp.MustCompile(`^[A-Za-z]+$`).MatchString
 
@@ -90,7 +88,10 @@ func NewTemplate(descs []*protokit.FileDescriptor) *Template {
 		}
 
 		for _, s := range f.Services {
-			file.Services = append(file.Services, parseService(s))
+			parsed := parseService(s)
+			if !strings.Contains(parsed.Description, "$hide_from_docs") {
+				file.Services = append(file.Services, parsed)
+			}
 		}
 
 		sort.Sort(file.Enums)
@@ -210,7 +211,7 @@ type Message struct {
 
 	Options map[string]interface{} `json:"options,omitempty"`
 
-	HideFromYaml bool                   `json:"hideFromYaml"`
+	HideFromYaml bool `json:"hideFromYaml"`
 }
 
 // Option returns the named option.
@@ -535,49 +536,6 @@ func parseMessageField(pf *protokit.FieldDescriptor) *MessageField {
 }
 
 func parseService(ps *protokit.ServiceDescriptor) *Service {
-	if ps.OptionExtensions == nil {
-		ps.OptionExtensions = map[string]interface{}{}
-	}
-	parts := strings.Split(ps.GetOptions().String(), " ")
-	for _, part := range parts {
-		if strings.HasPrefix(part, "2001:") {
-			payload := part[8 : len(part)-1]
-			components := deleteEmpty(strings.Split(payload, "\\"))
-
-			requiredPermissions := rbac_v2.RequiredPermission{
-				RawPermissions: []string{},
-			}
-			paramSwitch := false
-			paramKey := ""
-			for index, component := range components {
-				if index%2 == 1 && paramSwitch {
-					paramSwitch = false
-
-					if paramKey == "x01" {
-						requiredPermissions.Permissions = []rbac_v2.Permission{permissions[component[1:]]}
-					}
-
-					if paramKey == "x18" && component == "x01" {
-						requiredPermissions.DeferPermissionCheckToApplication = true
-					}
-
-					if paramKey == "x12" || paramKey == "12" {
-						first := string(component[0])
-						value := component[1:]
-						if isAlpha(first) && first == "x" {
-							value = component[3:]
-						}
-						requiredPermissions.RawPermissions = append(requiredPermissions.RawPermissions, value)
-					}
-				} else {
-					paramSwitch = true
-					paramKey = component
-				}
-			}
-			ps.OptionExtensions["tetrateio.api.tsb.rbac.v2.default_requires"] = requiredPermissions
-		}
-	}
-
 	service := &Service{
 		Name:        ps.GetName(),
 		LongName:    ps.GetLongName(),
@@ -587,63 +545,16 @@ func parseService(ps *protokit.ServiceDescriptor) *Service {
 	}
 
 	for _, sm := range ps.Methods {
-		service.Methods = append(service.Methods, parseServiceMethod(sm))
+		parsed := parseServiceMethod(sm)
+		if !strings.Contains(parsed.Description, "$hide_from_docs") {
+			service.Methods = append(service.Methods, parsed)
+		}
 	}
 
 	return service
 }
 
 func parseServiceMethod(pm *protokit.MethodDescriptor) *ServiceMethod {
-	if pm.OptionExtensions == nil {
-		pm.OptionExtensions = map[string]interface{}{}
-	}
-
-	// Super hacky indeed!
-	parts := strings.Split(pm.GetOptions().String(), " ")
-	for _, part := range parts {
-		if strings.HasPrefix(part, "2001:") {
-			payload := part[8 : len(part)-1]
-			components := deleteEmpty(strings.Split(payload, "\\"))
-
-			requiredPermissions := rbac_v2.RequiredPermission{
-				RawPermissions: []string{},
-			}
-			paramSwitch := false
-			paramKey := ""
-			for index, component := range components {
-				if index%2 == 1 && paramSwitch {
-					paramSwitch = false
-
-					if paramKey == "x01" || paramKey == "01" {
-						requiredPermissions.Permissions = []rbac_v2.Permission{permissions[component[1:]]}
-					}
-
-					if (paramKey == "x18" || paramKey == "18") && component == "x01" {
-						requiredPermissions.DeferPermissionCheckToApplication = true
-					}
-
-					if paramKey == "x12" || paramKey == "12" {
-						first := string(component[0])
-						value := component[1:]
-						if isAlpha(first) && first == "x" {
-							value = component[3:]
-						}
-						requiredPermissions.RawPermissions = append(requiredPermissions.RawPermissions, value)
-					}
-				} else {
-					paramSwitch = true
-					paramKey = component
-				}
-			}
-			pm.OptionExtensions["tetrateio.api.tsb.rbac.v2.requires"] = requiredPermissions
-		} else if strings.HasPrefix(part, "2002:") {
-			components := strings.Split(part, "\\n'")
-			pm.OptionExtensions["tetrateio.api.tsb.types.v2.spec"] = types_v2.IstioObjectSpec{
-				Type: (components[1][0:(len(components[1]) - 1)]),
-			}
-		}
-	}
-
 	return &ServiceMethod{
 		Name:              pm.GetName(),
 		Description:       description(pm.GetComments().String()),

@@ -102,7 +102,7 @@ Haha
 <a name="com.example.BookingService"></a>
 
 ### BookingService
-Service for handling vehicle bookings.
+
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
