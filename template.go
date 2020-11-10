@@ -13,14 +13,8 @@ import (
 	"github.com/pseudomuto/protokit"
 )
 
-// var permissions = map[string]rbac_v2.Permission{
-// 	"00": rbac_v2.Permission_INVALID,
-// 	"01": rbac_v2.Permission_READ,
-// 	"02": rbac_v2.Permission_WRITE,
-// 	"03": rbac_v2.Permission_CREATE,
-// 	"04": rbac_v2.Permission_DELETE,
-// 	"05": rbac_v2.Permission_SET_POLICY,
-// }
+const hideFromDocs = "$hide_from_docs"
+const hideFromYaml = "$hide_from_yaml"
 
 var isAlpha = regexp.MustCompile(`^[A-Za-z]+$`).MatchString
 
@@ -67,9 +61,9 @@ func NewTemplate(descs []*protokit.FileDescriptor) *Template {
 		var addFromMessage func(*protokit.Descriptor)
 		addFromMessage = func(m *protokit.Descriptor) {
 			parsed := parseMessage(m)
-			if !strings.Contains(parsed.Description, "$hide_from_docs") {
-				parsed.HideFromYaml = strings.Contains(parsed.Description, "$hide_from_yaml")
-				parts := strings.Split(parsed.Description, "$hide_from_yaml")
+			if !strings.Contains(parsed.Description, hideFromDocs) {
+				parsed.HideFromYaml = strings.Contains(parsed.Description, hideFromYaml)
+				parts := strings.Split(parsed.Description, hideFromYaml)
 				if len(parts) > 1 {
 					parsed.Description = strings.TrimSpace(parts[0])
 				}
@@ -89,7 +83,7 @@ func NewTemplate(descs []*protokit.FileDescriptor) *Template {
 
 		for _, s := range f.Services {
 			parsed := parseService(s)
-			if !strings.Contains(parsed.Description, "$hide_from_docs") {
+			if !strings.Contains(parsed.Description, hideFromDocs) {
 				file.Services = append(file.Services, parsed)
 			}
 		}
@@ -485,9 +479,9 @@ func parseMessage(pm *protokit.Descriptor) *Message {
 
 	for _, f := range pm.Fields {
 		parsed := parseMessageField(f)
-		if !strings.Contains(parsed.Description, "$hide_from_docs") {
-			parsed.HideFromYaml = strings.Contains(parsed.Description, "$hide_from_yaml")
-			parts := strings.Split(parsed.Description, "$hide_from_yaml")
+		if !strings.Contains(parsed.Description, hideFromDocs) {
+			parsed.HideFromYaml = strings.Contains(parsed.Description, hideFromYaml)
+			parts := strings.Split(parsed.Description, hideFromYaml)
 			if len(parts) > 1 {
 				parsed.Description = strings.TrimSpace(parts[0])
 			}
@@ -546,7 +540,7 @@ func parseService(ps *protokit.ServiceDescriptor) *Service {
 
 	for _, sm := range ps.Methods {
 		parsed := parseServiceMethod(sm)
-		if !strings.Contains(parsed.Description, "$hide_from_docs") {
+		if !strings.Contains(parsed.Description, hideFromDocs) {
 			service.Methods = append(service.Methods, parsed)
 		}
 	}
